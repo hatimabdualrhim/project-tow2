@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # خادم الويب (PHP + Apache)
+  web:
+    image: php:8.2-apache
+    container_name: student_web
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - db
+    # تثبيت إضافات PDO للملفات للتواصل مع MySQL وتفعيل الـ Rewrite
+    command: >
+      sh -c "docker-php-ext-install pdo pdo_mysql && apache2-foreground"
+
+  # قاعدة البيانات (MySQL)
+  db:
+    image: mysql:8.0
+    container_name: student_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: student_management
+      MYSQL_USER: student_user
+      MYSQL_PASSWORD: student_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      # تشغيل ملف السكربت تلقائياً عند إنشاء الحاوية لأول مرة
+      - ./database.sql:/docker-entrypoint-initdb.d/database.sql
+
+volumes:
+  db_data:
